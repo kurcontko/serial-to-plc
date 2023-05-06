@@ -1,0 +1,12 @@
+{
+  "Devices": [
+    {
+      "PortName": "COM4",
+      "BaudRate": 19200,
+      "IpAddress": "192.168.1.1",
+      "Rack": 0,
+      "Slot": 1
+    },
+    // Add more devices as needed
+  ]
+}

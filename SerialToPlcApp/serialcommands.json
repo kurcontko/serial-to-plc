@@ -1,0 +1,14 @@
+{
+  "SerialCommands": [
+    {
+      "SendCommand": "RT\r",
+      "ValidationPattern": "^\\d+(\\.\\d+)?C\\r$",
+      "OffsetAddress": 0
+    },
+    {
+      "SendCommand": "RUFS\r",
+      "ValidationPattern": "^(?:\\d{1,3} ){7}\\d{1,3}\\r$",
+      "OffsetAddress": 4
+    }
+  ]
+}
