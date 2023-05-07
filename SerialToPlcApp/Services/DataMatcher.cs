@@ -1,20 +1,16 @@
-﻿using SerialToPlcApp.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using SerialToPlcApp.Models;
 
 namespace SerialToPlcApp.Services
 {
     public interface IDataMatcher
     {
-        SerialCommands MatchCommand(string receivedData, List<SerialCommands> serialCommands);
+        SerialCommand MatchCommand(string receivedData, List<SerialCommand> serialCommands);
     }
 
     public class DataMatcher : IDataMatcher
     {
-        public SerialCommands MatchCommand(string receivedData, List<SerialCommands> serialCommands)
+        public SerialCommand MatchCommand(string receivedData, List<SerialCommand> serialCommands)
         {
             foreach (var command in serialCommands)
             {

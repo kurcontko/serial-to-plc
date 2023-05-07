@@ -1,11 +1,6 @@
-﻿using SerialToPlcApp.Logging;
-using SerialToPlcApp.Models;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO.Ports;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

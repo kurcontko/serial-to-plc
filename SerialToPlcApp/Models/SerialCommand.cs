@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace SerialToPlcApp.Models
 {
-    public class SerialCommands
+    public class SerialCommand
     {
         public string SendCommand { get; set; }
         public string ValidationPattern { get; set; }

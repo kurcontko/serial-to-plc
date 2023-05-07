@@ -1,12 +1,9 @@
-﻿using SerialToPlcApp.Logging;
-using SerialToPlcApp.Models;
-using Sharp7;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sharp7;
+using SerialToPlcApp.Logging;
+using SerialToPlcApp.Models;
 
 namespace SerialToPlcApp.Services
 {

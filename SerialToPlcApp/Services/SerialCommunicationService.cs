@@ -1,11 +1,9 @@
-﻿using SerialToPlcApp.Logging;
-using SerialToPlcApp.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SerialToPlcApp.Logging;
+using SerialToPlcApp.Models;
 
 namespace SerialToPlcApp.Services
 {
@@ -20,10 +18,10 @@ namespace SerialToPlcApp.Services
         private readonly DataMatcher dataMatcher;
         private readonly DataQueue dataQueue;
         private readonly DeviceSetting deviceSetting;
-        private readonly List<SerialCommands> serialCommands;
+        private readonly List<SerialCommand> serialCommands;
         private readonly ILogger logger;
 
-        public SerialCommunicationService(DataProcessor dataProcessor, DataQueue dataQueue, DeviceSetting deviceSetting, List<SerialCommands> serialCommands, ILogger logger, DataMatcher dataMatcher, bool useMock)
+        public SerialCommunicationService(DataProcessor dataProcessor, DataQueue dataQueue, DeviceSetting deviceSetting, List<SerialCommand> serialCommands, ILogger logger, DataMatcher dataMatcher, bool useMock)
         {
             this.serialComm = useMock ? (ISerialCommunication)new SerialCommunicationMock() : new SerialCommunication(deviceSetting.PortName, deviceSetting.BaudRate);
             this.dataProcessor = dataProcessor;

@@ -1,21 +1,17 @@
-﻿using SerialToPlcApp.Models;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using SerialToPlcApp.Models;
 
 namespace SerialToPlcApp.Services
 {
     public interface IDataProcessor
     {
-        byte[] ProcessReceivedData(string receivedData, SerialCommands matchedCommand);
+        byte[] ProcessReceivedData(string receivedData, SerialCommand matchedCommand);
     }
     public class DataProcessor : IDataProcessor
     {
-        public byte[] ProcessReceivedData(string receivedData, SerialCommands matchedCommand)
+        public byte[] ProcessReceivedData(string receivedData, SerialCommand matchedCommand)
         {
             if (Regex.IsMatch(receivedData, matchedCommand.ValidationPattern))
             {
