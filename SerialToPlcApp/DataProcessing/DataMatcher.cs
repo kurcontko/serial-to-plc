@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using SerialToPlcApp.Models;
 
-namespace SerialToPlcApp.Services
+namespace SerialToPlcApp.DataProcessing
 {
     public interface IDataMatcher
     {

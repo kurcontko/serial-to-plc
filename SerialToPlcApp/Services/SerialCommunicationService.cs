@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SerialToPlcApp.DataProcessing;
 using SerialToPlcApp.Logging;
 using SerialToPlcApp.Models;
+using SerialToPlcApp.Queues;
 
 namespace SerialToPlcApp.Services
 {

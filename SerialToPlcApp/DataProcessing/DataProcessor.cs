@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using SerialToPlcApp.Models;
 
-namespace SerialToPlcApp.Services
+namespace SerialToPlcApp.DataProcessing
 {
     public interface IDataProcessor
     {

@@ -3,7 +3,7 @@ using System.IO;
 using Newtonsoft.Json;
 using SerialToPlcApp.Models;
 
-namespace SerialToPlcApp.Services
+namespace SerialToPlcApp.Configuration
 {
     public class SerialCommandsManager
     {

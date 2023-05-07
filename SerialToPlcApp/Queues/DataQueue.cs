@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using SerialToPlcApp.Models;
 
-namespace SerialToPlcApp.Services
+namespace SerialToPlcApp.Queues
 {
     public interface IDataQueue
     {

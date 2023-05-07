@@ -2,8 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using SerialToPlcApp.Services;
+using SerialToPlcApp.Configuration;
+using SerialToPlcApp.DataProcessing;
 using SerialToPlcApp.Logging;
+using SerialToPlcApp.Queues;
+using SerialToPlcApp.Services;
 
 namespace SerialToPlcApp
 {

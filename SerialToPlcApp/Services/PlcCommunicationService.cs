@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Sharp7;
 using SerialToPlcApp.Logging;
 using SerialToPlcApp.Models;
+using SerialToPlcApp.DataProcessing;
+using SerialToPlcApp.Queues;
 
 namespace SerialToPlcApp.Services
 {
