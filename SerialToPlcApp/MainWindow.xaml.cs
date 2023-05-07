@@ -36,7 +36,7 @@ namespace SerialToPlcApp
             var dataMatcher = new DataMatcher();
             var dataProcessor = new DataProcessor();
             var dataQueue = new DataQueue();
-            ILogger logger = new Logger(LogTextBox, Dispatcher);
+            var logger = new Logger(LogTextBox, Dispatcher);
 
             foreach (var deviceSetting in deviceSettings)
             {
