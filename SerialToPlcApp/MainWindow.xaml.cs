@@ -16,10 +16,12 @@ using System.Windows.Shapes;
 using System.Text.RegularExpressions;
 using System.Collections.Concurrent;
 using System.IO.Ports;
+using System.Globalization;
 using Sharp7;
 using System.IO;
 using Newtonsoft.Json;
 using System.Windows.Threading;
+using static SerialToPlcApp.MainWindow;
 
 namespace SerialToPlcApp
 {
@@ -31,15 +33,19 @@ namespace SerialToPlcApp
         public MainWindow()
         {
             InitializeComponent();
+            this.Loaded += Window_Loaded;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             cancellationTokenSource = new CancellationTokenSource();
 
+            // Load configuration files
             var devicesSettings = LoadDeviceSettings("devicesettings.json");
             var commandPairs = LoadSerialCommands("serialcommands.json");
 
+            // Initialize objects
+            var dataMatcher = new DataMatcher();
             var dataProcessor = new DataProcessor();
             var dataQueue = new DataQueue();
             ILogger logger = new Logger(LogTextBox, Dispatcher);
@@ -49,7 +55,7 @@ namespace SerialToPlcApp
                 // Set useMock to true for testing with the mock serial device, and false for testing with the actual serial device
                 bool useMock = true;
 
-                var serialCommunicationService = new SerialCommunicationService(dataProcessor, dataQueue, deviceSetting, commandPairs, logger, useMock);
+                var serialCommunicationService = new SerialCommunicationService(dataProcessor, dataQueue, deviceSetting, commandPairs, logger, dataMatcher, useMock);
                 var plcCommunicationService = new PlcCommunicationService(dataProcessor, dataQueue, deviceSetting, logger);
 
                 // Start the SerialComm task
@@ -95,52 +101,84 @@ namespace SerialToPlcApp
             cancellationTokenSource.Cancel();
         }
 
-        public interface IDataProcessor
+        public interface IDataMatcher
         {
-            byte[] ProcessReceivedData(string receivedData);
+            SerialCommand MatchCommand(string receivedData, List<SerialCommand> serialCommands);
         }
-        public class DataProcessor : IDataProcessor
+
+        public class DataMatcher : IDataMatcher
         {
-            public byte[] ProcessReceivedData(string receivedData)
+            public SerialCommand MatchCommand(string receivedData, List<SerialCommand> serialCommands)
             {
-                // Process the "RT" command response
-                if (Regex.IsMatch(receivedData, @"^\d+(\.\d+)?C\r$"))
+                foreach (var command in serialCommands)
                 {
-                    double temperature = double.Parse(receivedData.TrimEnd('C', '\r'));
-                    byte[] temperatureBytes = BitConverter.GetBytes(temperature);
-
-                    if (BitConverter.IsLittleEndian)
+                    if (command.ValidateResponse(receivedData))
                     {
-                        Array.Reverse(temperatureBytes);
+                        return command;
                     }
-
-                    return temperatureBytes;
                 }
 
-                // Process the "RUFS" command response
-                if (Regex.IsMatch(receivedData, @"^(?:\d{1,3} ){7}\d{1,3}\r$"))
-                {
-                    string[] values = receivedData.TrimEnd('\r').Split(' ');
-                    byte[] valuesBytes = new byte[values.Length];
-
-                    for (int i = 0; i < values.Length; i++)
-                    {
-                        valuesBytes[i] = byte.Parse(values[i]);
-                    }
-
-                    return valuesBytes;
-                }
-
-                // Add more processing logic for other command responses if you need
-
-                return null; // Return null if the received data is not recognized or cannot be processed
+                return null;
             }
         }
 
+        public interface IDataProcessor
+        {
+            byte[] ProcessReceivedData(string receivedData, SerialCommand matchedCommand);
+        }
+        public class DataProcessor : IDataProcessor
+        {
+            public byte[] ProcessReceivedData(string receivedData, SerialCommand matchedCommand)
+            {
+                if (Regex.IsMatch(receivedData, matchedCommand.ValidationPattern))
+                {
+                    switch (matchedCommand.SendCommand)
+                    {
+                        case "RT\r":
+                            return ProcessRtCommandResponse(receivedData);
+                        case "RUFS\r":
+                            return ProcessRufsCommandResponse(receivedData);
+                        // Add more processing logic for other command responses if you need
+                        default:
+                            break;
+                    }
+                }
+
+                return null; // Return null if the received data is not recognized or cannot be processed
+            }
+
+            private byte[] ProcessRtCommandResponse(string receivedData)
+            {
+                string trimmedData = receivedData.TrimEnd('C', '\r');
+                float temperature;
+                float.TryParse(trimmedData, NumberStyles.Float, CultureInfo.InvariantCulture, out temperature);
+                byte[] temperatureBytes = BitConverter.GetBytes(temperature);
+
+                if (BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(temperatureBytes);
+                }
+
+                return temperatureBytes;
+            }
+
+            private byte[] ProcessRufsCommandResponse(string receivedData)
+            {
+                string[] values = receivedData.TrimEnd('\r').Split(' ');
+                byte[] valuesBytes = new byte[values.Length];
+
+                for (int i = 0; i < values.Length; i++)
+                {
+                    valuesBytes[i] = byte.Parse(values[i]);
+                }
+
+                return valuesBytes;
+            }
+        }
 
         public class ReceivedDataWithOffset
         {
-            public string ReceivedData { get; set; }
+            public byte[] ReceivedData { get; set; }
             public int OffsetAddress { get; set; }
         }
 
@@ -153,9 +191,6 @@ namespace SerialToPlcApp
         {
             private readonly ConcurrentQueue<ReceivedDataWithOffset> queue = new ();
             private readonly int maxSize;
-
-
-
 
             public DataQueue(int maxSize = 500) // Limit the queue size to prevent memory overloading
             {
@@ -189,6 +224,7 @@ namespace SerialToPlcApp
             private readonly IDataQueue dataQueue;
             private readonly DeviceSetting deviceSetting;
             private readonly ILogger logger;
+            private readonly PlcCommunication plcComm;
 
             public PlcCommunicationService(IDataProcessor dataProcessor, IDataQueue dataQueue, DeviceSetting deviceSetting, ILogger logger)
             {
@@ -196,6 +232,7 @@ namespace SerialToPlcApp
                 this.dataQueue = dataQueue;
                 this.deviceSetting = deviceSetting;
                 this.logger = logger;
+                this.plcComm = new PlcCommunication(deviceSetting.IpAddress, deviceSetting.Rack, deviceSetting.Slot);
             }
 
             public async Task RunAsync(CancellationToken cancellationToken)
@@ -204,8 +241,7 @@ namespace SerialToPlcApp
                 {
                     try
                     {
-                        using (var plcComm = new PlcCommunication(deviceSetting.IpAddress, deviceSetting.Rack, deviceSetting.Slot))
-                        {
+
                             plcComm.Open();
 
                             while (!cancellationToken.IsCancellationRequested)
@@ -215,18 +251,26 @@ namespace SerialToPlcApp
                                     if (dataQueue.TryDequeue(out var receivedDataWithOffset))
                                     {
                                         // Process the received data
-                                        var receivedData = receivedDataWithOffset.ReceivedData;
-                                        byte[] processedData = dataProcessor.ProcessReceivedData(receivedData);
+                                        byte[] receivedData = receivedDataWithOffset.ReceivedData;
+                                        if (receivedData == null)
+                                        {
+                                            logger.Log($"Error: Data processing failed for received data: {receivedData}");
+                                            continue; // Skip this iteration and move on to the next
+                                        }
 
-                                        // Write the processed data to the PLC
-                                        int startAddress = deviceSetting.StartAddress + receivedDataWithOffset.OffsetAddress;
-                                        int result = plcComm.Client.WriteArea(S7Consts.S7AreaDB, deviceSetting.DbNumber, startAddress, processedData.Length, S7Consts.S7WLByte, processedData);
+                                    // Write the processed data to the PLC
+                                    int startAddress = deviceSetting.StartAddress + receivedDataWithOffset.OffsetAddress;
+                                        int result = plcComm.Client.WriteArea(S7Consts.S7AreaDB, deviceSetting.DbNumber, startAddress, receivedData.Length, S7Consts.S7WLByte, receivedData);
 
                                         if (result != 0)
                                         {
                                             logger.Log($"Error writing data to PLC: {plcComm.Client.ErrorText(result)}");
                                             break; // Break the inner loop to restart the PLC communication
                                         }
+                                        else
+                                        {
+                                        logger.Log($"Data sent to PLC successfully: {receivedData}");
+                                        }   
                                     }
                                     else
                                     {
@@ -241,7 +285,7 @@ namespace SerialToPlcApp
                             }
 
                             plcComm.Close();
-                        }
+                    
                     }
                     catch (Exception ex)
                     {
@@ -262,18 +306,20 @@ namespace SerialToPlcApp
         {
             private readonly ISerialCommunication serialComm;
             private readonly DataProcessor dataProcessor;
+            private readonly DataMatcher dataMatcher;
             private readonly DataQueue dataQueue;
             private readonly DeviceSetting deviceSetting;
-            private readonly List<SerialCommand> commandPairs;
+            private readonly List<SerialCommand> serialCommands;
             private readonly ILogger logger;
 
-            public SerialCommunicationService(DataProcessor dataProcessor, DataQueue dataQueue, DeviceSetting deviceSetting, List<SerialCommand> commandPairs, ILogger logger, bool useMock)
+            public SerialCommunicationService(DataProcessor dataProcessor, DataQueue dataQueue, DeviceSetting deviceSetting, List<SerialCommand> serialCommands, ILogger logger, DataMatcher dataMatcher, bool useMock)
             {
                 this.serialComm = useMock ? (ISerialCommunication)new MockSerialCommunication() : new SerialCommunication(deviceSetting.PortName, deviceSetting.BaudRate);
                 this.dataProcessor = dataProcessor;
+                this.dataMatcher = dataMatcher;
                 this.dataQueue = dataQueue;
                 this.deviceSetting = deviceSetting;
-                this.commandPairs = commandPairs;
+                this.serialCommands = serialCommands;
                 this.logger = logger;
             }
 
@@ -291,17 +337,19 @@ namespace SerialToPlcApp
                         {
                             try
                             {
-                                foreach (var commandPair in commandPairs)
+                                foreach (var commandPair in serialCommands)
                                 {
                                     await serialComm.SendAsync(commandPair.SendCommand, cancellationToken);
                                     string receivedData = await serialComm.ReceiveAsync(cancellationToken);
 
-                                    if (commandPair.ValidateResponse(receivedData))
+                                    var matchedCommand = dataMatcher.MatchCommand(receivedData, serialCommands);
+                                    if (matchedCommand != null)
                                     {
+                                        var processedData = dataProcessor.ProcessReceivedData(receivedData, matchedCommand);
                                         dataQueue.Enqueue(new ReceivedDataWithOffset
                                         {
-                                            ReceivedData = receivedData,
-                                            OffsetAddress = commandPair.OffsetAddress
+                                            ReceivedData = processedData,
+                                            OffsetAddress = matchedCommand.OffsetAddress
                                         });
                                     }
                                     else
@@ -343,8 +391,8 @@ namespace SerialToPlcApp
 
             public Logger(TextBox logTextBox, Dispatcher dispatcher)
             {
-                logTextBox = logTextBox;
-                dispatcher = dispatcher;
+                this.logTextBox = logTextBox;
+                this.dispatcher = dispatcher;
             }
 
             public void Log(string message)
@@ -504,7 +552,7 @@ namespace SerialToPlcApp
         private readonly Dictionary<string, string> responseMapping = new Dictionary<string, string>
     {
         { "RT\r", "20.0C\r" },
-        { "RUFS\r", "0 0 0 13 64 128 192 255\r" },
+        { "RUFS\r", "0 0 0 13 64\r" },
     };
 
         public void Open()
