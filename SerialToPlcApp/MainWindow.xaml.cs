@@ -13,8 +13,6 @@ namespace SerialToPlcApp
         private const string SerialCommandsFilePath = "serialcommands.json";
 
         private CancellationTokenSource cancellationTokenSource;
-        private DeviceSettingsManager deviceSettingsManager;
-        private SerialCommandsManager serialCommandsManager;
 
         public MainWindow()
         {
@@ -25,18 +23,18 @@ namespace SerialToPlcApp
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             cancellationTokenSource = new CancellationTokenSource();
-            deviceSettingsManager = new DeviceSettingsManager();
-            serialCommandsManager = new SerialCommandsManager();
-
-            // Load configuration files
-            var deviceSettings = deviceSettingsManager.LoadDeviceSettings(DeviceSettingsFilePath);
-            var serialCommands = serialCommandsManager.LoadSerialCommands(SerialCommandsFilePath);
 
             // Initialize objects
             var dataMatcher = new DataMatcher();
             var dataProcessor = new DataProcessor();
             var dataQueue = new DataQueue();
             var logger = new Logger(LogTextBox, Dispatcher);
+            var deviceSettingsManager = new DeviceSettingsManager();
+            var serialCommandsManager = new SerialCommandsManager();
+
+            // Load configuration files
+            var deviceSettings = deviceSettingsManager.LoadDeviceSettings(DeviceSettingsFilePath);
+            var serialCommands = serialCommandsManager.LoadSerialCommands(SerialCommandsFilePath);
 
             foreach (var deviceSetting in deviceSettings)
             {
