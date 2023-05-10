@@ -20,7 +20,6 @@ namespace SerialToPlcApp
         public MainWindow()
         {
             InitializeComponent();
-            this.Loaded += Window_Loaded;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -54,13 +53,8 @@ namespace SerialToPlcApp
                     {
                         await serialCommunicationService.RunAsync(cancellationTokenSource.Token);
                     }
-                    catch (OperationCanceledException)
-                    {
-                        // Handle the case when the operation is canceled, if necessary
-                    }
                     catch (Exception ex)
                     {
-                        // Handle exceptions and log them
                         logger.Log($"An error occurred: {ex.Message}");
                     }
                 });
@@ -72,13 +66,8 @@ namespace SerialToPlcApp
                     {
                         await plcCommunicationService.RunAsync(cancellationTokenSource.Token);
                     }
-                    catch (OperationCanceledException)
-                    {
-                        // Handle the case when the operation is canceled, if necessary
-                    }
                     catch (Exception ex)
                     {
-                        // Handle exceptions and log them
                         logger.Log($"An error occurred: {ex.Message}");
                     }
                 });
