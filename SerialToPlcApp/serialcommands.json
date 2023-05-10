@@ -7,7 +7,7 @@
     },
     {
       "SendCommand": "RUFS\r",
-      "ValidationPattern": "^(?:\\d{1,3} ){7}\\d{1,3}\\r$",
+      "ValidationPattern": "^(?:\\d{1,3} ){5}\\d{1,3}\\r$",
       "OffsetAddress": 4
     }
   ]
