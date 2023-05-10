@@ -55,17 +55,10 @@ namespace SerialToPlcApp.Services
 
                                 // Write the processed data to the PLC
                                 int startAddress = deviceSetting.StartAddress + receivedDataWithOffset.OffsetAddress;
-                                int result = plcComm.Client.WriteArea(S7Consts.S7AreaDB, deviceSetting.DbNumber, startAddress, receivedData.Length, S7Consts.S7WLByte, receivedData);
+                                plcComm.WriteData(deviceSetting.DbNumber, startAddress, receivedData);
 
-                                if (result != 0)
-                                {
-                                    logger.Log($"Error writing data to PLC: {plcComm.Client.ErrorText(result)}");
-                                    break; // Break the inner loop to restart the PLC communication
-                                }
-                                else
-                                {
-                                    logger.Log($"Data sent to PLC successfully");
-                                }
+                                logger.Log($"Data sent to PLC successfully");
+
                             }
                             else
                             {
@@ -81,6 +74,7 @@ namespace SerialToPlcApp.Services
 
                     plcComm.Close();
 
+
                 }
                 catch (Exception ex)
                 {
@@ -89,6 +83,9 @@ namespace SerialToPlcApp.Services
 
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken); // Wait before reopening conncection
             }
+
+            plcComm.Dispose();
+
         }
 
     }

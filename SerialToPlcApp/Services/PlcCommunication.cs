@@ -7,8 +7,6 @@ namespace SerialToPlcApp.Services
     {
         private readonly S7Client client;
 
-        public S7Client Client => client;
-
         public PlcCommunication(string ipAddress, int rack, int slot)
         {
             client = new S7Client();
@@ -43,6 +41,4 @@ namespace SerialToPlcApp.Services
             Close();
         }
     }
-
-
 }
