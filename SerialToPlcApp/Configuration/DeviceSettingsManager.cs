@@ -11,7 +11,7 @@ namespace SerialToPlcApp.Configuration
         {
             using (var reader = new StreamReader(jsonFilePath))
             {
-                var json = reader.ReadToEnd();
+                var json = File.ReadAllText(jsonFilePath);
                 var settings = JsonConvert.DeserializeObject<DeviceSettings>(json);
                 return settings.Devices;
             }
