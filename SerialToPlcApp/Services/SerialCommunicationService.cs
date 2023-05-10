@@ -48,9 +48,9 @@ namespace SerialToPlcApp.Services
                     {
                         try
                         {
-                            foreach (var commandPair in serialCommands)
+                            foreach (var command in serialCommands)
                             {
-                                await serialComm.SendAsync(commandPair.SendCommand, cancellationToken);
+                                await serialComm.SendAsync(command.SendCommand, cancellationToken);
                                 string receivedData = await serialComm.ReceiveAsync(cancellationToken);
 
                                 var matchedCommand = dataMatcher.MatchCommand(receivedData, serialCommands);
