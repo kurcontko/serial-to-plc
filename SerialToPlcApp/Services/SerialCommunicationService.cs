@@ -87,6 +87,8 @@ namespace SerialToPlcApp.Services
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken); // Wait before restart
             }
 
+            serialComm.Dispose();
         }
+
     }
 }
