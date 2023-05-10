@@ -34,6 +34,8 @@ namespace SerialToPlcApp.Services
         {
             if (serialPort.IsOpen)
             {
+                FlushInputBuffer();
+                FlushOutputBuffer();
                 serialPort.Close();
             }
         }
@@ -62,6 +64,11 @@ namespace SerialToPlcApp.Services
         public void FlushInputBuffer()
         {
             serialPort.DiscardInBuffer();
+        }
+
+        public void FlushOutputBuffer()
+        {
+            serialPort.DiscardOutBuffer();
         }
 
         public async Task SendAsync(string command, CancellationToken cancellationToken)
