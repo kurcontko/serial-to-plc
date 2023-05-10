@@ -71,7 +71,7 @@ namespace SerialToPlcApp.Services
                         }
                         catch (Exception ex)
                         {
-                            logger.Log($"Serial communication error: {ex.Message}");
+                            logger.Log($"Serial communication sending / receiving error: {ex.Message}");
                             break; // Break the inner loop to restart the serial communication
                         }
                     }
@@ -81,7 +81,7 @@ namespace SerialToPlcApp.Services
                 }
                 catch (Exception ex)
                 {
-                    logger.Log($"Serial communication error: {ex.Message}");
+                    logger.Log($"Serial port opening / closing error: {ex.Message}");
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken); // Wait before restart
