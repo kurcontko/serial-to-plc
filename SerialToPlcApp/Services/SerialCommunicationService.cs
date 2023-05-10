@@ -16,10 +16,9 @@ namespace SerialToPlcApp.Services
     public class SerialCommunicationService : ISerialCommunicationService
     {
         private readonly ISerialCommunication serialComm;
-        private readonly DataProcessor dataProcessor;
-        private readonly DataMatcher dataMatcher;
-        private readonly DataQueue dataQueue;
-        private readonly DeviceSetting deviceSetting;
+        private readonly IDataProcessor dataProcessor;
+        private readonly IDataMatcher dataMatcher;
+        private readonly IDataQueue dataQueue;
         private readonly List<SerialCommand> serialCommands;
         private readonly ILogger logger;
 
@@ -29,7 +28,6 @@ namespace SerialToPlcApp.Services
             this.dataProcessor = dataProcessor;
             this.dataMatcher = dataMatcher;
             this.dataQueue = dataQueue;
-            this.deviceSetting = deviceSetting;
             this.serialCommands = serialCommands;
             this.logger = logger;
         }
