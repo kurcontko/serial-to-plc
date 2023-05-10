@@ -8,6 +8,24 @@
       "Slot": 1,
       "DbNumber": 2,
       "StartAddress": 0
+    },
+    {
+      "PortName": "COM5",
+      "BaudRate": 19200,
+      "IpAddress": "192.168.1.200",
+      "Rack": 0,
+      "Slot": 1,
+      "DbNumber": 2,
+      "StartAddress": 10
+    },
+    {
+      "PortName": "COM6",
+      "BaudRate": 19200,
+      "IpAddress": "192.168.1.200",
+      "Rack": 0,
+      "Slot": 1,
+      "DbNumber": 2,
+      "StartAddress": 20
     }
   ]
 }
