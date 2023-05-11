@@ -3,6 +3,7 @@ using System.IO.Ports;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace SerialToPlcApp.Services
 {
@@ -15,7 +16,9 @@ namespace SerialToPlcApp.Services
     }
     public class SerialCommunication : ISerialCommunication
     {
-        private SerialPort serialPort;
+        private SerialPort serialPort;    
+        private StreamWriter writer;
+        private StreamReader reader;
 
         public SerialCommunication(string portName, int baudRate = 9600, Parity parity = Parity.None, int dataBits = 8, StopBits stopBits = StopBits.One)
         {
@@ -24,10 +27,9 @@ namespace SerialToPlcApp.Services
 
         public void Open()
         {
-            if (!serialPort.IsOpen)
-            {
-                serialPort.Open();
-            }
+            serialPort.Open();
+            writer = new StreamWriter(serialPort.BaseStream);
+            reader = new StreamReader(serialPort.BaseStream);
         }
 
         public void Close()
@@ -36,6 +38,8 @@ namespace SerialToPlcApp.Services
             {
                 FlushInputBuffer();
                 FlushOutputBuffer();
+                writer.Dispose();
+                reader.Dispose();
                 serialPort.Close();
             }
         }
@@ -52,14 +56,7 @@ namespace SerialToPlcApp.Services
 
         public void Dispose()
         {
-            if (serialPort != null)
-            {
-                if (serialPort.IsOpen)
-                {
-                    serialPort.Close();
-                }
-                serialPort.Dispose();
-            }
+            serialPort.Close();
         }
         public void FlushInputBuffer()
         {
@@ -71,21 +68,29 @@ namespace SerialToPlcApp.Services
             serialPort.DiscardOutBuffer();
         }
 
-        public async Task SendAsync(string command, CancellationToken cancellationToken)
+        private string ReceiveData()
         {
-            using (var writer = new StreamWriter(serialPort.BaseStream))
+            var receivedData = new StringBuilder();
+            int currentByte;
+
+            // Read bytes one by one until CR
+            while ((currentByte = serialPort.BaseStream.ReadByte()) != '\r')
             {
-                await writer.WriteLineAsync(command);
-                await writer.FlushAsync();
+                receivedData.Append((char)currentByte);
             }
+
+            return receivedData.ToString();
         }
 
-        public async Task<string> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task SendAsync(string command, CancellationToken cancellationToken)
         {
-            using (var reader = new StreamReader(serialPort.BaseStream))
-            {
-                return await reader.ReadLineAsync();
-            }
+            await writer.WriteLineAsync(command);
+            await writer.FlushAsync();
+        }
+
+        public Task<string> ReceiveAsync(CancellationToken cancellationToken)
+        {
+            return Task.Run(() => ReceiveData(), cancellationToken);
         }
     }
 }
