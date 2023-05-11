@@ -37,7 +37,8 @@ namespace SerialToPlcApp
             foreach (var deviceSetting in deviceSettings)
             {
                 // Set useMock to true for testing with the mock serial device, and false for testing with the actual serial device
-                bool useMock = true;
+                // Have to be replaced with some different solution
+                bool useMock = false;
 
                 // Initialize objects
                 var dataMatcher = new DataMatcher();
