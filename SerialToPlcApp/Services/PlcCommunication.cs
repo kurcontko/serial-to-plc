@@ -27,13 +27,14 @@ namespace SerialToPlcApp.Services
             client.Disconnect();
         }
 
-        public void WriteData(int dbNumber, int start, byte[] buffer)
+        public int WriteData(int dbNumber, int start, byte[] buffer)
         {
             int result = client.DBWrite(dbNumber, start, buffer.Length, buffer);
             if (result != 0)
             {
                 throw new Exception($"Error writing data to PLC: {client.ErrorText(result)}");
             }
+            return result;
         }
 
         public void Dispose()

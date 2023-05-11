@@ -55,9 +55,7 @@ namespace SerialToPlcApp.Services
 
                                 // Write the processed data to the PLC
                                 int startAddress = deviceSetting.StartAddress + receivedDataWithOffset.OffsetAddress;
-                                plcComm.WriteData(deviceSetting.DbNumber, startAddress, receivedData);
-
-                                logger.Log($"Data sent to PLC successfully");
+                                int result = plcComm.WriteData(deviceSetting.DbNumber, startAddress, receivedData);
 
                             }
                             else
