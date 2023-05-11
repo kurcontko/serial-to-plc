@@ -12,8 +12,8 @@ namespace SerialToPlcApp
 {
     public partial class MainWindow : Window
     {
-        private const string deviceSettingsFilePath = "devicesettings.json";
-        private const string serialCommandsFilePath = "serialcommands.json";
+        private const string deviceSettingsFilePath = "DeviceSettings.json";
+        private const string serialCommandsFilePath = "SerialCommands.json";
 
         private CancellationTokenSource cancellationTokenSource;
 
