@@ -26,23 +26,24 @@ namespace SerialToPlcApp
         {
             cancellationTokenSource = new CancellationTokenSource();
 
-            // Initialize objects
-            var dataMatcher = new DataMatcher();
-            var dataProcessor = new DataProcessor();
-            var dataQueue = new DataQueue();
-            var logger = new Logger(LogTextBox, Dispatcher);
+            // Load configuration files
             var deviceSettingsManager = new DeviceSettingsManager();
             var serialCommandsManager = new SerialCommandsManager();
 
-            // Load configuration files
             var deviceSettings = deviceSettingsManager.LoadDeviceSettings(deviceSettingsFilePath);
             var serialCommands = serialCommandsManager.LoadSerialCommands(serialCommandsFilePath);
 
+            // Create services for each device
             foreach (var deviceSetting in deviceSettings)
             {
                 // Set useMock to true for testing with the mock serial device, and false for testing with the actual serial device
                 bool useMock = true;
 
+                // Initialize objects
+                var dataMatcher = new DataMatcher();
+                var dataProcessor = new DataProcessor();
+                var dataQueue = new DataQueue();
+                var logger = new Logger(LogTextBox, Dispatcher);
                 var serialCommunicationService = new SerialCommunicationService(dataProcessor, dataQueue, deviceSetting, serialCommands, logger, dataMatcher, useMock);
                 var plcCommunicationService = new PlcCommunicationService(dataProcessor, dataQueue, deviceSetting, logger);
 
