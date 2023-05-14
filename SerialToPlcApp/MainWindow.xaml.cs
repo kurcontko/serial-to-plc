@@ -29,6 +29,9 @@ namespace SerialToPlcApp
         public MainWindow()
         {
             InitializeComponent();
+
+            this.DataContext = this;
+
             XmlConfigurator.Configure(new FileInfo("log4net.config"));
         }
 

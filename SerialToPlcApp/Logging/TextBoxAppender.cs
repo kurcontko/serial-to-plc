@@ -15,17 +15,10 @@ namespace SerialToPlcApp.Logging
     public class TextBoxAppender : AppenderSkeleton
     {
         private TextBox textBox;
-        private readonly ConcurrentQueue<string> messages = new ConcurrentQueue<string>();
-        private List<LoggingEvent> buffer = new List<LoggingEvent>();
-        private Timer timer;
+        private Queue<string> buffer = new Queue<string>();
 
         public string TextBoxName { get; set; }
-        private const int MaxMessages = 100; // Maximum number of messages to be shown in the log
-
-        public TextBoxAppender()
-        {
-            timer = new Timer(Flush, null, 0, 2000); // Flush every 2 seconds
-        }
+        private const int MaxBufferSize = 100; // Maximum number of messages to be shown in the log
 
         protected override void Append(LoggingEvent loggingEvent)
         {
@@ -47,35 +40,26 @@ namespace SerialToPlcApp.Logging
             {
                 lock (buffer)
                 {
-                    buffer.Add(loggingEvent);
-                }
-            }
-        }
+                    buffer.Enqueue(RenderLoggingEvent(loggingEvent));
 
-        private void Flush(object state)
-        {
-            lock (buffer)
-            {
-                if (buffer.Count > 0)
-                {
-                    textBox.Dispatcher.Invoke(() =>
+                    if (buffer.Count > 0)
                     {
-                        foreach (var loggingEvent in buffer)
+                        textBox.Dispatcher.Invoke(() =>
                         {
-                            textBox.AppendText(RenderLoggingEvent(loggingEvent));
-                        }
-                        buffer.Clear();
 
-                        // limit number of lines
-                        const int maxLines = MaxMessages;
-                        if (textBox.LineCount > maxLines)
-                        {
-                            int endOfLine = textBox.GetCharacterIndexFromLineIndex(maxLines);
-                            textBox.Text = textBox.Text.Remove(0, endOfLine);
-                        }
-                    });
+                            // Remove oldest log messages from the buffer if it exceeds the max size
+                            while (buffer.Count > MaxBufferSize)
+                            {
+                                buffer.Dequeue();
+                            }
+
+                            // Display the buffer in the TextBox
+                            textBox.Text = string.Join("", buffer);
+                        });
+                    }
                 }
             }
         }
+
     }
 }
