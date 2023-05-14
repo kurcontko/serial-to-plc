@@ -5,14 +5,14 @@ using SerialToPlcApp.Models;
 
 namespace SerialToPlcApp.Configuration
 {
-    public class DeviceSettingsManager
+    public class PlcSettingsManager
     {
-        public List<DeviceSetting> LoadDeviceSettings(string jsonFilePath)
+        public List<PlcSetting> LoadDeviceSettings(string jsonFilePath)
         {
             using (var reader = new StreamReader(jsonFilePath))
             {
                 var json = File.ReadAllText(jsonFilePath);
-                var settings = JsonConvert.DeserializeObject<DeviceSettings>(json);
+                var settings = JsonConvert.DeserializeObject<PlcSettings>(json);
                 return settings.Devices;
             }
         }

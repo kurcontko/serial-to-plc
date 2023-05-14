@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SerialToPlcApp.DataProcessing;
-using SerialToPlcApp.Logging;
 using SerialToPlcApp.Models;
 using SerialToPlcApp.Queues;
+using log4net;
 
 namespace SerialToPlcApp.Services
 {
@@ -20,16 +20,17 @@ namespace SerialToPlcApp.Services
         private readonly IDataMatcher dataMatcher;
         private readonly IDataQueue dataQueue;
         private readonly List<SerialCommand> serialCommands;
-        private readonly ILogger logger;
+        private readonly SerialSetting serialSetting;
+        private static readonly ILog log = LogManager.GetLogger(typeof(SerialCommunicationService));
 
-        public SerialCommunicationService(DataProcessor dataProcessor, DataQueue dataQueue, DeviceSetting deviceSetting, List<SerialCommand> serialCommands, ILogger logger, DataMatcher dataMatcher, bool useMock)
+        public SerialCommunicationService(ISerialCommunication serialComm, IDataProcessor dataProcessor, IDataMatcher dataMatcher, IDataQueue dataQueue, SerialSetting serialSetting, List<SerialCommand> serialCommands)
         {
-            this.serialComm = useMock ? (ISerialCommunication)new SerialCommunicationMock() : new SerialCommunication(deviceSetting.PortName, deviceSetting.BaudRate);
+            this.serialComm = serialComm;
             this.dataProcessor = dataProcessor;
             this.dataMatcher = dataMatcher;
             this.dataQueue = dataQueue;
             this.serialCommands = serialCommands;
-            this.logger = logger;
+            this.serialSetting = serialSetting;
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
@@ -60,16 +61,18 @@ namespace SerialToPlcApp.Services
                                         ReceivedData = processedData,
                                         OffsetAddress = matchedCommand.OffsetAddress
                                     });
+
+                                    log.Info($"Serial port: {serialSetting.PortName} - Received correct data: {receivedData}");
                                 }
                                 else
                                 {
-                                    logger.Log($"Received invalid data: {receivedData}");
+                                    log.Error($"Serial port: {serialSetting.PortName} - Received invalid data: {receivedData}");
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            logger.Log($"Serial communication sending / receiving error: {ex.Message}");
+                            log.Error($"Serial port: {serialSetting.PortName} - Serial communication sending / receiving error: {ex.Message}");
                             break; // Break the inner loop to restart the serial communication
                         }
                     }
@@ -79,7 +82,7 @@ namespace SerialToPlcApp.Services
                 }
                 catch (Exception ex)
                 {
-                    logger.Log($"Serial port opening / closing error: {ex.Message}");
+                    log.Error($"Serial port: {serialSetting.PortName} - Serial port opening / closing error: {ex.Message}");
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken); // Wait before restart

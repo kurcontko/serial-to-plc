@@ -1,8 +1,6 @@
 {
   "Devices": [
     {
-      "PortName": "COM4",
-      "BaudRate": 19200,
       "IpAddress": "192.168.1.200",
       "Rack": 0,
       "Slot": 1,
@@ -10,8 +8,6 @@
       "StartAddress": 0
     },
     {
-      "PortName": "COM5",
-      "BaudRate": 19200,
       "IpAddress": "192.168.1.200",
       "Rack": 0,
       "Slot": 1,
@@ -19,8 +15,6 @@
       "StartAddress": 10
     },
     {
-      "PortName": "COM6",
-      "BaudRate": 19200,
       "IpAddress": "192.168.1.200",
       "Rack": 0,
       "Slot": 1,

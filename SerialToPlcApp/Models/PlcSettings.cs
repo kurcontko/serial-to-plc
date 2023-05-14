@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SerialToPlcApp.Models
 {
-    public class DeviceSetting
+    public class PlcSetting
     {
-        public string PortName { get; set; }
-        public int BaudRate { get; set; }
         public string IpAddress { get; set; }
         public int Rack { get; set; }
         public int Slot { get; set; }
@@ -13,8 +15,8 @@ namespace SerialToPlcApp.Models
         public int StartAddress { get; set; }
     }
 
-    public class DeviceSettings
+    public class PlcSettings
     {
-        public List<DeviceSetting> Devices { get; set; }
+        public List<PlcSetting> Devices { get; set; }
     }
 }

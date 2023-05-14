@@ -2,10 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Sharp7;
-using SerialToPlcApp.Logging;
 using SerialToPlcApp.Models;
 using SerialToPlcApp.DataProcessing;
 using SerialToPlcApp.Queues;
+using log4net;
 
 namespace SerialToPlcApp.Services
 {
@@ -15,19 +15,16 @@ namespace SerialToPlcApp.Services
     }
     public class PlcCommunicationService : IPlcCommunicationService
     {
-        private readonly IDataProcessor dataProcessor;
         private readonly IDataQueue dataQueue;
-        private readonly DeviceSetting deviceSetting;
-        private readonly ILogger logger;
+        private readonly PlcSetting plcSetting;
         private readonly PlcCommunication plcComm;
+        private static readonly ILog log = LogManager.GetLogger(typeof(PlcCommunicationService));
 
-        public PlcCommunicationService(IDataProcessor dataProcessor, IDataQueue dataQueue, DeviceSetting deviceSetting, ILogger logger)
+        public PlcCommunicationService(DataQueue dataQueue, PlcSetting plcSetting)
         {
-            this.dataProcessor = dataProcessor;
             this.dataQueue = dataQueue;
-            this.deviceSetting = deviceSetting;
-            this.logger = logger;
-            this.plcComm = new PlcCommunication(deviceSetting.IpAddress, deviceSetting.Rack, deviceSetting.Slot);
+            this.plcSetting = plcSetting;
+            this.plcComm = new PlcCommunication(plcSetting.IpAddress, plcSetting.Rack, plcSetting.Slot);
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
@@ -49,13 +46,19 @@ namespace SerialToPlcApp.Services
                                 byte[] receivedData = receivedDataWithOffset.ReceivedData;
                                 if (receivedData == null)
                                 {
-                                    logger.Log($"Error: Data processing failed for received data: {receivedData}");
+                                    log.Error($"IP: {plcSetting.IpAddress} - Error: Data processing failed for received data: {receivedData}");
                                     continue; // Skip this iteration and move on to the next
                                 }
 
                                 // Write the processed data to the PLC
-                                int startAddress = deviceSetting.StartAddress + receivedDataWithOffset.OffsetAddress;
-                                int result = plcComm.WriteData(deviceSetting.DbNumber, startAddress, receivedData);
+                                int startAddress = plcSetting.StartAddress + receivedDataWithOffset.OffsetAddress;
+                                int result = plcComm.WriteData(plcSetting.DbNumber, startAddress, receivedData);
+
+                                if (result == 0)
+                                {
+                                    log.Info($"IP: {plcSetting.IpAddress} - Data to PLC sent successfully");
+                                }
+
 
                             }
                             else
@@ -65,7 +68,7 @@ namespace SerialToPlcApp.Services
                         }
                         catch (Exception ex)
                         {
-                            logger.Log($"PLC communication error: {ex.Message}");
+                            log.Error($"IP: {plcSetting.IpAddress} - PLC sending error: {ex.Message}");
                             break; // Break the inner loop to restart the PLC communication
                         }
                     }
@@ -76,7 +79,7 @@ namespace SerialToPlcApp.Services
                 }
                 catch (Exception ex)
                 {
-                    logger.Log($"PLC communication error: {ex.Message}");
+                    log.Error($"IP: {plcSetting.IpAddress} - PLC communication error: {ex.Message}");
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken); // Wait before reopening conncection

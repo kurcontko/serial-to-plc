@@ -1,0 +1,25 @@
+{
+  "Devices": [
+    {
+      "PortName": "COM4",
+      "BaudRate": 19200,
+      "Parity": 0,
+      "DataBits": 0,
+      "StopBits":  1
+    },
+    {
+      "PortName": "COM5",
+      "BaudRate": 19200,
+      "Parity": 0,
+      "DataBits": 0,
+      "StopBits": 1
+    },
+    {
+      "PortName": "COM6",
+      "BaudRate": 19200,
+      "Parity": 0,
+      "DataBits": 0,
+      "StopBits": 1
+    }
+  ]
+}
