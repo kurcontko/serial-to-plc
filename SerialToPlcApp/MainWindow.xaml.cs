@@ -17,7 +17,7 @@ namespace SerialToPlcApp
 {
     public partial class MainWindow : Window
     {
-        private const string deviceSettingsFilePath = "DeviceSettings.json";
+        private const string deviceSettingsFilePath = "SerialSettings.json";
         private const string plcSettingsFilePath = "PlcSettings.json";
         private const string serialCommandsFilePath = "SerialCommands.json";
         
@@ -56,13 +56,13 @@ namespace SerialToPlcApp
                 var plcSetting = pair.Plc;
                 // Set useMock to true for testing with the mock serial device, and false for testing with the actual serial device
                 // Have to be replaced with some different solution
-                bool useMock = true;
+                bool useMock = false;
 
                 // Initialize objects
                 var dataMatcher = new DataMatcher();
                 var dataProcessor = new DataProcessor();
                 var dataQueue = new DataQueue();
-                var serialComm = useMock ? (ISerialCommunication)new SerialCommunicationMock() : new SerialCommunication(serialSetting.PortName, serialSetting.BaudRate, (Parity)serialSetting.Parity, serialSetting.DataBits, (StopBits)serialSetting.StopBits);
+                var serialComm = useMock ? (ISerialCommunication)new SerialCommunicationMock() : new SerialCommunication(serialSetting.PortName, serialSetting.BaudRate, serialSetting.Parity, serialSetting.DataBits, serialSetting.StopBits);
                 var serialCommunicationService = new SerialCommunicationService(serialComm, dataProcessor, dataMatcher, dataQueue, serialSetting, serialCommands);
                 var plcCommunicationService = new PlcCommunicationService(dataQueue, plcSetting);
 

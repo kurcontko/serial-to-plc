@@ -7,9 +7,9 @@ namespace SerialToPlcApp.Models
     {
         public string PortName { get; set; }
         public int BaudRate { get; set; }
-        public int Parity { get; set; }
+        public Parity Parity { get; set; }
         public int DataBits { get; set; }
-        public int StopBits { get; set; }
+        public StopBits StopBits { get; set; }
     }
 
     public class SerialSettings

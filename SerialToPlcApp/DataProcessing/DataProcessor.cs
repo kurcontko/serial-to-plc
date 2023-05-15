@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using SerialToPlcApp.Models;
 
@@ -19,8 +20,12 @@ namespace SerialToPlcApp.DataProcessing
                 {
                     case "RT\r":
                         return ProcessRtCommandResponse(receivedData);
+                    case "RS\r":
+                        return ProcessRtCommandResponse(receivedData);
                     case "RUFS\r":
                         return ProcessRufsCommandResponse(receivedData);
+                    case "RCK\r":
+                        return ProcessRckCommandResponse(receivedData);
                     default:
                         break;
                 }
@@ -53,6 +58,14 @@ namespace SerialToPlcApp.DataProcessing
             {
                 valuesBytes[i] = byte.Parse(values[i]);
             }
+
+            return valuesBytes;
+        }
+
+        private byte[] ProcessRckCommandResponse(string receivedData)
+        {
+            string value = receivedData.TrimEnd('\r');
+            byte[] valuesBytes = Encoding.ASCII.GetBytes(value);
 
             return valuesBytes;
         }

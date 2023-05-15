@@ -1,25 +1,25 @@
 {
   "Devices": [
     {
+      "PortName": "COM3",
+      "BaudRate": 19200,
+      "Parity": "None",
+      "DataBits": 8,
+      "StopBits": "One"
+    },
+    {
       "PortName": "COM4",
       "BaudRate": 19200,
-      "Parity": 0,
-      "DataBits": 0,
-      "StopBits":  1
+      "Parity": "None",
+      "DataBits": 8,
+      "StopBits": "One"
     },
     {
       "PortName": "COM5",
       "BaudRate": 19200,
-      "Parity": 0,
-      "DataBits": 0,
-      "StopBits": 1
-    },
-    {
-      "PortName": "COM6",
-      "BaudRate": 19200,
-      "Parity": 0,
-      "DataBits": 0,
-      "StopBits": 1
+      "Parity": "None",
+      "DataBits": 8,
+      "StopBits": "One"
     }
   ]
 }

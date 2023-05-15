@@ -1,25 +1,25 @@
 {
   "Devices": [
     {
-      "IpAddress": "192.168.1.200",
+      "IpAddress": "10.133.140.1",
       "Rack": 0,
       "Slot": 1,
-      "DbNumber": 2,
+      "DbNumber": 1000,
       "StartAddress": 0
     },
     {
-      "IpAddress": "192.168.1.200",
+      "IpAddress": "10.133.140.1",
       "Rack": 0,
       "Slot": 1,
-      "DbNumber": 2,
-      "StartAddress": 10
+      "DbNumber": 1000,
+      "StartAddress": 22
     },
     {
-      "IpAddress": "192.168.1.200",
+      "IpAddress": "10.133.140.1",
       "Rack": 0,
       "Slot": 1,
-      "DbNumber": 2,
-      "StartAddress": 20
+      "DbNumber": 1000,
+      "StartAddress": 44
     }
   ]
 }

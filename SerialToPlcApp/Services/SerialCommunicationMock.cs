@@ -10,8 +10,10 @@ namespace SerialToPlcApp.Services
     {
         private readonly Dictionary<string, string> responseMapping = new Dictionary<string, string>
     {
-        { "RT\r", "20.0C\r" },
-        { "RUFS\r", "0 0 0 13 64\r" },
+        { "RT\r", "20.0C" },
+        { "RS\r", "20.0C" },
+        { "RUFS\r", "0 0 0 13 64" },
+        { "RCK\r", "18:47:53" },
     };
 
         public void Open()
