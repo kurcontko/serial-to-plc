@@ -12,6 +12,7 @@ namespace SerialToPlcApp.Queues
     {
         private readonly ConcurrentQueue<ReceivedDataWithOffset> queue = new();
         private readonly int maxSize;
+        private readonly object lockObj = new object();
 
         public DataQueue(int maxSize = 500) // Limit the queue size to prevent memory overloading
         {
@@ -20,18 +21,24 @@ namespace SerialToPlcApp.Queues
 
         public void Enqueue(ReceivedDataWithOffset item)
         {
-            queue.Enqueue(item);
-
-            // Remove the oldest item if the queue size exceeds the maximum size
-            while (queue.Count > maxSize)
+            lock (lockObj)
             {
-                queue.TryDequeue(out _);
+                queue.Enqueue(item);
+
+                // Remove the oldest item if the queue size exceeds the maximum size
+                while (queue.Count > maxSize)
+                {
+                    queue.TryDequeue(out _);
+                }
             }
         }
 
         public bool TryDequeue(out ReceivedDataWithOffset item)
         {
-            return queue.TryDequeue(out item);
+            lock (lockObj)
+            {
+                return queue.TryDequeue(out item);
+            }
         }
     }
 }
