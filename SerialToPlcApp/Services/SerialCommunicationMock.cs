@@ -9,21 +9,23 @@ namespace SerialToPlcApp.Services
     public class SerialCommunicationMock : ISerialCommunication
     {
         private readonly Dictionary<string, string> responseMapping = new Dictionary<string, string>
-    {
-        { "RT\r", "20.0C" },
-        { "RS\r", "20.0C" },
-        { "RUFS\r", "0 0 0 13 64" },
-        { "RCK\r", "18:47:53" },
-    };
+        {
+            { "RT\r", "20.0C" },
+            { "RS\r", "20.0C" },
+            { "RUFS\r", "0 0 0 13 64" },
+            { "RCK\r", "18:47:53" },
+        };
 
-        public void Open()
+        public Task OpenAsync(int readTimeoutMilliseconds = 500, int writeTimeoutMilliseconds = 500, CancellationToken cancellationToken = default)
         {
             // No implementation needed for the mock
+            return Task.CompletedTask;
         }
 
-        public void Close()
+        public Task CloseAsync(CancellationToken cancellationToken)
         {
             // No implementation needed for the mock
+            return Task.CompletedTask;
         }
 
         public Task SendAsync(string command, CancellationToken cancellationToken)

@@ -9,8 +9,8 @@ namespace SerialToPlcApp.Services
 {
     public interface ISerialCommunication : IDisposable
     {
-        void Open();
-        void Close();
+        Task OpenAsync(int readTimeoutMilliseconds = 500, int writeTimeoutMilliseconds = 500, CancellationToken cancellationToken = default);
+        Task CloseAsync(CancellationToken cancellationToken);
         Task SendAsync(string command, CancellationToken cancellationToken);
         Task<string> ReceiveAsync(CancellationToken cancellationToken);
     }
@@ -25,23 +25,39 @@ namespace SerialToPlcApp.Services
             serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
         }
 
-        public void Open()
+        public Task OpenAsync(int readTimeoutMilliseconds = 500, int writeTimeoutMilliseconds = 500, CancellationToken cancellationToken = default)
         {
-            serialPort.Open();
-            writer = new StreamWriter(serialPort.BaseStream);
-            reader = new StreamReader(serialPort.BaseStream);
+            return Task.Run(() =>
+            {
+                serialPort.Open();
+                serialPort.ReadTimeout = readTimeoutMilliseconds;
+                serialPort.WriteTimeout = writeTimeoutMilliseconds;
+                writer = new StreamWriter(serialPort.BaseStream);
+                reader = new StreamReader(serialPort.BaseStream);
+            }, cancellationToken);
         }
 
-        public void Close()
+        public Task CloseAsync(CancellationToken cancellationToken)
         {
-            if (serialPort.IsOpen)
+            return Task.Run(() =>
             {
-                FlushInputBuffer();
-                FlushOutputBuffer();
-                writer.Dispose();
-                reader.Dispose();
-                serialPort.Close();
-            }
+                try
+                {
+                    if (serialPort.IsOpen)
+                    {
+                        FlushInputBuffer();
+                        FlushOutputBuffer();
+                        writer.Dispose();
+                        reader.Dispose();
+                        serialPort.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle any exceptions that occur during close operation
+                    throw new InvalidOperationException("Failed to close serial port", ex);
+                }
+            }, cancellationToken);
         }
 
         public string ReadData()
@@ -81,9 +97,9 @@ namespace SerialToPlcApp.Services
 
             return receivedData.ToString();
         }
-
         public async Task SendAsync(string command, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await writer.WriteLineAsync(command);
             await writer.FlushAsync();
         }
@@ -92,5 +108,6 @@ namespace SerialToPlcApp.Services
         {
             return Task.Run(() => ReceiveData(), cancellationToken);
         }
+
     }
 }

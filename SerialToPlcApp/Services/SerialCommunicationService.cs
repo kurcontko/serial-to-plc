@@ -35,13 +35,15 @@ namespace SerialToPlcApp.Services
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
+            const int timeoutMilliseconds = 3000;
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-
-                    serialComm.Open();
+                    // Set timeout for opening the serial communication
+                    var openTimeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
+                    await serialComm.OpenAsync(timeoutMilliseconds, timeoutMilliseconds, openTimeoutSource.Token);
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
@@ -49,9 +51,12 @@ namespace SerialToPlcApp.Services
                         {
                             foreach (var command in serialCommands)
                             {
-                                await serialComm.SendAsync(command.SendCommand, cancellationToken);
+                                // Set timeout for sending and receiving data
+                                var sendReceiveTimeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
+
+                                await serialComm.SendAsync(command.SendCommand, sendReceiveTimeoutSource.Token);
                                 dataMatcher.SetLastSentCommand(command);
-                                string receivedData = await serialComm.ReceiveAsync(cancellationToken);
+                                string receivedData = await serialComm.ReceiveAsync(sendReceiveTimeoutSource.Token);
 
                                 var matchedCommand = dataMatcher.MatchCommand(receivedData, serialCommands);
                                 if (matchedCommand != null)
@@ -71,6 +76,11 @@ namespace SerialToPlcApp.Services
                                 }
                             }
                         }
+                        catch (OperationCanceledException)
+                        {
+                            log.Error($"Serial port: {serialSetting.PortName} - Timeout occurred during sending/receiving data.");
+                            break;
+                        }
                         catch (Exception ex)
                         {
                             log.Error($"Serial port: {serialSetting.PortName} - Serial communication sending / receiving error: {ex.Message}");
@@ -78,8 +88,14 @@ namespace SerialToPlcApp.Services
                         }
                     }
 
-                    serialComm.Close();
+                    // Set timeout for closing the serial communication
+                    var closeTimeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds));
+                    await serialComm.CloseAsync(closeTimeoutSource.Token);
 
+                }
+                catch (OperationCanceledException)
+                {
+                    log.Error($"Serial port: {serialSetting.PortName} - Timeout occurred during opening/closing serial port.");
                 }
                 catch (Exception ex)
                 {
@@ -91,6 +107,5 @@ namespace SerialToPlcApp.Services
 
             serialComm.Dispose();
         }
-
     }
 }
